@@ -106,6 +106,12 @@ for(var a = 0; a < numCurves; a++){
     }
 }
 
+// Clear scene function
+function clearScene(scene){
+    while(scene.children.length > 0)
+        scene.remove(scene.children[0]);
+}
+
 // Animate function
 function animate(){
     requestAnimationFrame(animate);

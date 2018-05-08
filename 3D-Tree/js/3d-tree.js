@@ -73,6 +73,12 @@ function createTree(layers, num_legs, pos){
 
 createTree(total_layers, branches_per_node, new THREE.Vector3(0, -1, 0));
 
+// Clear scene function
+function clearScene(scene){
+    while(scene.children.length > 0)
+        scene.remove(scene.children[0]);
+}
+
 // Animate function
 function animate(){
     requestAnimationFrame(animate);
