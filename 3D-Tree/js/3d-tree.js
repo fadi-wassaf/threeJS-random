@@ -5,7 +5,7 @@ var camera = new THREE.PerspectiveCamera(
 );
 
 // Initialize renderer.
-var renderer = new THREE.WebGLRenderer({ antialias: true});
+var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -25,6 +25,7 @@ var branches_per_node = 8;
 var branch_angles = Math.PI/4;
 
 function createTree(layers, num_legs, pos){
+    // Base case (if no more layers are left, then return)
     if(layers <= 0)
         return;
     for(var a = 0; a < num_legs; a++){
