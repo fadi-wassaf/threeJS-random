@@ -1,3 +1,6 @@
+// NOTE: LIGHT_MODE variable can either be set in this file
+// or in the corresponding HTML file. It must be present though.
+
 // Create scene and camera.
 var main_scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(
@@ -14,48 +17,143 @@ var controls = new THREE.OrbitControls(camera);
 camera.position.set(0, 0, 10);
 controls.update();
 
-// Function that can get a random value in a bounded domain
-function getBoundedRand(min, max){
-    return Math.random() * (max - min) + min;
-};
-
 // Clear scene function
 function clearScene(scene){
     while(scene.children.length > 0)
         scene.remove(scene.children[0]);
 }
 
-// Get img source from file
+// Variables for size of voxel image
+var imgLength = 10;
+var imgRes = 100;
+var voxelSize = imgLength / imgRes;
+
+// Create image and virtual canvas (Use 1000x1000 res image)
 var img = new Image();
-// Get image values
-img.src = './moon.jpg';
-// img.onload = function() {};
-
-// Create virtual canvas that is used to get pixel data
+img.crossOrigin = "Anonymous";
 var canvas = document.createElement('canvas');
-canvas.width = img.width;
-canvas.height = img.height;
-canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
-// Get pixel data
-var pixelData = canvas.getContext('2d').getImageData(0, 0, img.width, img.height);
+// Create empty 2d arrays to store initial and reduced versions of image
+var pixelData;
+var pixelDataFormatted = [];
+var pixelDataReduced = [];
 
-// var imageData = canvas.getContext('2d').getImageData(0, 0, imgWidth, imgHeight);
-// console.log(img.naturalWidth);
+img.onload = function() {
+    // Set canvas width and height
+    canvas.width = img.width;
+    canvas.height = img.height;
+    
+    // Draw image to virtual canvas
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    pixelData = canvas.getContext('2d').getImageData(0, 0, img.width, img.height);
 
-// Scale image to fit in the area on screen
+    // Convert pixelData to 2d array filled with RGBA values
+    for(var y = 0; y < img.height; y++){
+        pixelDataFormatted[y] = [];
+        for(var x = 0; x < img.width; x++){
+            var pixelRGBA = [];
 
-// Make 2d array of voxel z-coordinates based off of
-// image pixel darkness
+            // Get initial index of this pixel in pixelData
+            var currIndexInit = (img.width * y) + x;
 
-// Make voxels and draw them
+            // Get RGBA values and put them into the formatted pixelData 2d array
+            pixelRGBA[0] = pixelData.data[currIndexInit*4];
+            pixelRGBA[1] = pixelData.data[currIndexInit*4 + 1];
+            pixelRGBA[2] = pixelData.data[currIndexInit*4 + 2];
+            pixelRGBA[3] = pixelData.data[currIndexInit*4 + 3];
+            pixelDataFormatted[y][x] = pixelRGBA;
+        }
+    }
 
-// Add light source
+    // Reduce array to 100x100 size
+    var chunkSize = img.width/imgRes;
+    for(var y = 0; y < img.height; y += chunkSize){
+        pixelDataReduced[y/chunkSize] = [];
+        for(var x = 0; x < img.width; x += chunkSize){
+            // Get average RGB value for this chunk
+            var avgR = 0, avgG = 0, avgB = 0;
+            for(var cy = 0; cy < chunkSize; cy++){
+                for(var cx = 0; cx < chunkSize; cx++){
+                    avgR += pixelDataFormatted[y + cy][x + cx][0];
+                    avgG += pixelDataFormatted[y + cy][x + cx][1];
+                    avgB += pixelDataFormatted[y + cy][x + cx][2];
+                }
+            }
+            // Finalize average RGB values
+            avgR /= Math.pow(chunkSize, 2);
+            avgG /= Math.pow(chunkSize, 2);
+            avgB /= Math.pow(chunkSize, 2);
+            pixelDataReduced[y/chunkSize][x/chunkSize] = [
+                Math.round(avgR), 
+                Math.round(avgG), 
+                Math.round(avgB)
+            ];
+        }
+    }
 
-var boxGeo = new THREE.BoxGeometry(.1, .1, .1);
-var mat = new THREE.MeshBasicMaterial({color: "#00ff00"});
-var cube = new THREE.Mesh(boxGeo, mat);
-main_scene.add(cube);
+    // Clear up memory?
+    pixelDataFormatted = 0;
+    pixelData = 0;
+
+    // Create geometry to use for all the voxels
+    var voxelGeo = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
+
+    // Loop through reduced 2d array and draw voxels
+    for(var y = 0; y < imgRes; y++){
+        for(var x = 0; x < imgRes; x++){
+            // Get correct color of this voxel
+            var mat;
+            if(!LIGHT_MODE){
+                mat = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(
+                        pixelDataReduced[y][x][0]/255,
+                        pixelDataReduced[y][x][1]/255,
+                        pixelDataReduced[y][x][2]/255
+                    )
+                });
+            } else {
+                mat = new THREE.MeshLambertMaterial({color: "#ffffff"});
+            }
+
+            // Get average of RGB values
+            var avgRGB = (pixelDataReduced[y][x][0] + 
+                pixelDataReduced[y][x][1] + pixelDataReduced[y][x][2])/(3*255);
+
+            // Create voxel
+            var voxel = new THREE.Mesh(voxelGeo, mat);
+
+            // Translate voxel to correct location
+            voxel.position.set(
+                (x * voxelSize) - (imgLength/2),
+                // (imageRes - y) is so that the image
+                // can be drawn right side up
+                ((imgRes - y) * voxelSize) - (imgLength/2),
+                -5 + (avgRGB * 5)
+            );
+
+            // Add current voxel to scene
+            main_scene.add(voxel);
+        }
+    }
+}
+
+// Assign image source
+img.src = './eye.jpg';
+
+// If light mode is on, we want lighting to actually
+// affect the appearance of the voxel "image"
+if(LIGHT_MODE){
+    // Create light and set proper values for it
+    var light = new THREE.PointLight(0xffffff, 1, 10);
+    light.position.set(0, 0, 3);
+    light.castShadow = true;
+    light.decay = 2;
+    light.power = 40;
+    renderer.physicallyCorrectLights = true;
+
+    // Add light to the scene
+    main_scene.add(light);
+}
 
 // Animate function
 function animate(){
