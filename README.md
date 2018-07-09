@@ -2,8 +2,9 @@
 A whole bunch of random three.js creations.
 
 ### View examples live:
-* [Firework](https://fadi-wassaf.github.io/threeJS-random/Firework/)
 * [3D-Tree](https://fadi-wassaf.github.io/threeJS-random/3D-Tree/)
+* [Firework](https://fadi-wassaf.github.io/threeJS-random/Firework/)
+* [Rainbow-Wave](https://fadi-wassaf.github.io/threeJS-random/Rainbow-Wave/)
 * Voxel Image
     * [LIGHT_OFF](https://fadi-wassaf.github.io/threeJS-random/Voxel-Image/light_off.html)
     * [LIGHT_ON](https://fadi-wassaf.github.io/threeJS-random/Voxel-Image/light_on.html)
