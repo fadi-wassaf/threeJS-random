@@ -5,7 +5,7 @@ var main_scene, camera, renderer, controls, stats, gui;
 var cubeMesh, cubeWireMesh;
 
 function init(){
-     // Initialize renderer
+    // Initialize renderer
     renderer = new THREE.WebGLRenderer({ antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);   
