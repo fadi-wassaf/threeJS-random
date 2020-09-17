@@ -1,0 +1,20 @@
+{
+    "Default" : {
+        "launch_angle": 45,
+        "launch_velocity": 1,
+        "height": 1,
+        "separation": 1,
+        "gravity": 1,
+        "axes_on": false,
+        "color": "#ffffff",
+        "particle_rad": 0.1,
+        "num_particles": 2,
+        "dT": 0.1,
+        "randomized_launch": false,
+        "bounce": false,
+        "deletion_height": -10,
+        "drag_coeff": 0,
+        "deletion_distance": 35,
+        "rate": 1
+    }
+}
