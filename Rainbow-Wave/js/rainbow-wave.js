@@ -31,7 +31,7 @@ function init(){
     }, false); 
 
     // Initialize orbiting controls.
-    controls = new THREE.OrbitControls(camera);
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
     camera.position.set(0, 0, 3);
     controls.update();
 

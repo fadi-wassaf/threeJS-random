@@ -5,12 +5,12 @@ var camera = new THREE.PerspectiveCamera(
 );
 
 // Initialize renderer.
-var renderer = new THREE.WebGLRenderer({ antialias: true });
+var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Initialize orbiting controls.
-var controls = new THREE.OrbitControls(camera);
+var controls = new THREE.OrbitControls(camera, renderer.domElement);
 camera.position.set(0, 0, 3);
 controls.update();
 
